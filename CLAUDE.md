@@ -97,6 +97,44 @@ Mortgage Calculator output).
 > output to `.cache/<node-name>_<node-id>_<kind>.<ext>` before doing
 > anything else with it.
 
+## Figma write (`use_figma`) gotchas
+
+Confirmed 2026-08-27 building the "Personal details" (step 3) screen at
+node `182845:337` from scratch via `use_figma`, reusing component
+instances cloned from the step-2 `travel-insurance-carbon` screen:
+
+> **`figma.createAutoLayout()` defaults to an opaque white fill.**
+> Any auto-layout frame you create that isn't meant to have its own
+> background (label groups, text columns, row wrappers) must have
+> `fills = []` set explicitly — otherwise it silently paints white over
+> whatever sits behind it. This is easy to miss because white text on a
+> white default fill just renders as a blank block, not an error.
+
+> **A cloned instance can silently ignore `SPACE_BETWEEN`/alignment
+> from its new auto-layout parent** if its source position came from a
+> non-auto-layout (manually-positioned) wrapper in the original file —
+> even though `layoutPositioning` reads back as `"AUTO"` and every
+> layout property looks correct. Don't trust the property getters here;
+> screenshot and check actual rendered positions. Fix: set
+> `layoutPositioning = "ABSOLUTE"` on the clone and compute `x`/`y`
+> explicitly (`parentWidth - childWidth`, etc.) rather than fighting the
+> auto-layout engine.
+
+> **Prefer cloning a known-good on-canvas instance over
+> `importComponentSetByKeyAsync` + `createInstance()`** when an
+> equivalent instance already exists in the file. One component's set
+> key (`Button`, `c18d5e044ac8009d54acde127439032acdc73428`) failed to
+> import by key with "Component set ... not found" for no clear reason,
+> while resolving the same set via an existing instance's
+> `mainComponent.parent` and cloning that instance worked immediately.
+> Cloning also carries over correct icon/text nesting for free.
+
+> **Text input component text-override keys** (set = `Style=Default,
+> Size=Large, State=Enabled, Text filled=False`, key
+> `601d9b8b345f853644185e6df00d270da4ca697a`): `"Label text#107318:0"`,
+> `"Placeholder text#15785:0"`, `"Input text#15785:31"` (only visible
+> when the `Text filled` variant prop is `True`), `"Show helper#11008:1264"` (boolean, defaults `true` — set `false` to hide the helper row).
+
 ## `.cache/` strategy
 
 `.cache/` is gitignored. It holds raw, disposable/regenerable fetch
