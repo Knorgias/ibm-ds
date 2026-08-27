@@ -54,6 +54,18 @@ node `11156:45588`), fetched 2026-08-27. Tag names verified against
   connect, clobbering a per-item override. You must set
   `alignment="start"` on the `<cds-accordion>` wrapper itself.
 
+### Text input - Default
+- Tag: `cds-text-input`
+- Attrs: `label` (not `label-text` like radio-button/date-picker-input —
+  confirmed 2026-08-27 by grepping the compiled component source, this
+  one's inconsistent), `placeholder`, `name`, `type`, `size` (`"lg"` for
+  the Figma "Size=Large" variant, no default set in the component so it
+  must be passed explicitly to match).
+- Notes: source is the personal-details screen (fileKey
+  `Vnzztyo2jJgzLefU8ioqJ2`, node `182845:337`) — First name, Last name,
+  Email address, Phone number fields. No default width — set `width:
+  100%` in CSS or it won't span the row like the design shows.
+
 ### Date picker - Single calendar - Default
 - Tag: `cds-date-picker` (attribute for single-calendar mode) wrapping
   `cds-date-picker-input`
@@ -62,3 +74,15 @@ node `11156:45588`), fetched 2026-08-27. Tag names verified against
   placeholder text ("DD-MM-YYYY") uses the Code utility font (IBM Plex
   Mono), not body font — see CLAUDE.md's font-sourcing rule. Docs:
   https://www.carbondesignsystem.com/components/date-picker/usage/
+- **Validation gotcha confirmed 2026-08-27:** unlike `cds-text-input`,
+  `cds-date-picker-input` does NOT extend `ValidityMixin` — there's no
+  `checkValidity()`, and `.invalid`/`.invalidText` must be set manually.
+  Its `.value` only updates through flatpickr's own change handling
+  (picking a date from the calendar popup, or typing with `allow-input`
+  enabled). Typing free text into the field without `allow-input` does
+  NOT update `.value` — reading it afterward silently returns `undefined`
+  (not `""`), which threw `Cannot read properties of undefined (reading
+  'trim')` in a validator that assumed a string. Always guard with
+  `field.value ?? ''` before calling string methods on any cds- field
+  value, and pick dates from the popup (or add `allow-input`) rather
+  than assuming typed text is captured.

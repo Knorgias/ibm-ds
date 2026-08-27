@@ -212,7 +212,8 @@ body {
   width: 100%;
 }
 
-.form-section cds-radio-button-group {
+.form-section cds-radio-button-group,
+.form-section cds-text-input {
   width: 100%;
 }
 

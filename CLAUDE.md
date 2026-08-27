@@ -175,6 +175,21 @@ add new ones as they come up.
    Remaining gap: only step 2 of the 4-step wizard is built; steps
    1/3/4 ("Select Insurance", "Personal details", "Review & pay") were
    never fetched from Figma and don't exist as nodes we've seen.
+3. ~~Design "Personal details" (step 3) in Figma and implement it~~ —
+   **done 2026-08-27.** Designed from scratch via `use_figma` onto an
+   empty target frame (node `182845:337`), reusing cloned component
+   instances from step 2 (see "Figma write gotchas" above for the two
+   bugs hit doing that). Then fetched back via `get_design_context` and
+   implemented in `src/main.js`: `renderCustomizeCoverage()` (step 2)
+   and `renderPersonalDetails()` (step 3, using `cds-text-input` ×4 +
+   the same `cds-date-picker`) now live side by side, with the Continue
+   button on step 2 and the Back link on step 3 wired to swap between
+   them client-side (no router — just re-rendering `#app`). Verified in
+   a real browser: step 2 → Continue → step 3 → Back → step 2, stepper
+   state updates correctly at each stage.
+   Remaining gap: steps 1 ("Select Insurance") and 4 ("Review & pay")
+   still don't exist in Figma or code. Step 3's own Continue button and
+   step 2's own Back/Close are still inert (no step 1 or 4 to link to).
 
 ## Explicitly out of scope
 
