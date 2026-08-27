@@ -37,7 +37,7 @@ server and screenshotting it in an actual browser
 Task: design a "Personal details" step (step 3 of 4) directly in
 Figma, onto an empty target frame, matching the step-2 screen's style.
 
-- Inspected the *existing* step-2 screen via `use_figma` (walking its
+- Inspected the _existing_ step-2 screen via `use_figma` (walking its
   instances' `mainComponent.parent`) to get exact component keys for
   Link, Button, Date picker already in use — more reliable than
   `search_design_system` when a matching screen already exists in the
@@ -58,11 +58,24 @@ Output: a new "Personal details" frame in the same Figma file, built
 from real design-system component instances (not drawn boxes),
 ready to be pulled back through step 1's design-to-code path.
 
+## Why hand-coded, not Code Connect
+
+Without Code Connect, Figma MCP's code-fetch tools return generic
+reference code (React + Tailwind here) plus raw design data. meaning the
+reference code is in the wrong stack, so it has to be manually
+retranslated into real `@carbon/web-components`, every fetch. Code
+Connect flips that: someone pre-authors a mapping, once per component,
+from the Figma component straight to the real code snippet you use.
+After that, MCP returns that exact snippet directly, no retranslation
+needed. One-time setup cost per component instead of a recurring one.
+Moot here either way: IBM's official Code Connect only covers
+`@carbon/react`, not our Lit-based `@carbon/web-components`. Code connect would fix that.
+
 ## Supporting pieces
 
 - **Plugin setup**: `claude plugin install figma@claude-plugins-official`
-  + `/mcp` to authorize (interactive-only, OAuth can't complete
-  headless).
+  - `/mcp` to authorize (interactive-only, OAuth can't complete
+    headless).
 - **`.cache/`**: raw fetch dumps (screenshots, metadata, tokens) kept
   locally, gitignored — disposable, re-fetched on demand.
 - **`CLAUDE.md` / `carbon-figma-map.md`**: rules and component-tag
