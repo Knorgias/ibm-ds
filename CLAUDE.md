@@ -37,23 +37,65 @@ OAuth) — switch to an interactive session and run `/mcp` again.
 
 ## Rules
 
-*(empty — nothing has been verified against live Figma MCP output yet)*
+Confirmed 2026-08-27 against a live fetch of the `travel-insurance-carbon`
+node (fileKey `Vnzztyo2jJgzLefU8ioqJ2`, node `11156:45588` — see note in
+"Next steps" about this being the wrong feature name; the *rules* below
+are still valid, they're just derived from insurance-wizard output, not
+Mortgage Calculator output).
 
-Rules get added here only once confirmed against actual MCP output in a
-session, with a short note on what was checked and when. Example of the
-target format once populated:
+> **Spacing** — confirmed 2026-08-27: `get_variable_defs` on this node
+> returned zero spacing/space-scale tokens (only color and typography
+> variables came back). Coordinate math on `get_metadata` (x/y/width/
+> height deltas between siblings) was the *only* source of spacing info
+> available, and it matched the rendered screenshot layout exactly (e.g.
+> sidebar `sidebar-header` at x=24,y=40 inside a 300×800 sidebar frame →
+> 24px/40px padding; `step-2` starts at y=60 right after `step-1`'s
+> y=0+height=36 → 24px gap). Always use coordinate math for spacing;
+> don't expect `get_variable_defs` to carry spacing tokens at all.
 
-> **Spacing** — confirmed 2026-08-27: coordinate math on `get_metadata`
-> matched the rendered layout; `get_variable_defs` spacing values did
-> not. Use coordinate math, not variable defs, for spacing.
+> **Component tag identification** — confirmed 2026-08-27 against
+> `@carbon/web-components@2.61.0` installed in `node_modules` (grepped
+> compiled `es/components/*/**.js` for `cds-*` custom element tags, not
+> guessed from memory). Rule: **take the Figma instance/component name,
+> split off anything after the first `" - "` (variant descriptors live
+> there, not in the base name), lowercase, kebab-case, prefix `cds-`.**
+> Verified mappings:
+> - `Link` → `cds-link`
+> - `Button` → `cds-button`
+> - `Radio button group` → `cds-radio-button-group`
+> - `Radio button` → `cds-radio-button`
+> - `Accordion item` → `cds-accordion-item` (needs a `cds-accordion`
+>   wrapper — the wrapper itself wasn't a separate node in this fetch,
+>   infer it when assembling multiple `Accordion item`s)
+> - `Date picker - Single calendar - Default` → `cds-date-picker`
+>   (wrapping a `cds-date-picker-input`) — the `" - Single calendar -
+>   Default"` suffix is variant info, dropped per the split rule above.
+>   This is the "composite name" case: don't kebab-case the *whole*
+>   string.
+> Known exception groups not yet re-checked live: Data table, Tag
+> sub-types (carried over from HANDOVER.md's prior framing — unverified
+> this session, don't trust until checked).
 
-Categories we expect to eventually fill in here (do not pre-fill with
-guesses):
-- Spacing (coordinate math vs. `get_variable_defs`)
-- Component tag identification (which MCP output maps to which
-  `@carbon/web-components` tag)
-- Font family sourcing
-- Caching behavior in practice
+> **Font family sourcing** — confirmed 2026-08-27: `get_design_context`'s
+> inline Tailwind font classes (`IBM_Plex_Sans:Regular`,
+> `IBM_Plex_Sans:SemiBold`) cross-checked cleanly against
+> `get_variable_defs` (`Fixed/Body/Font family` → "IBM Plex Sans"). One
+> real divergence caught: the date-picker placeholder text
+> (`DD-MM-YYYY`) is styled with the *code* utility style, not body —
+> `get_variable_defs`'s `Fixed/Utility/Code 01 + 02/Font family` is "IBM
+> Plex Mono", distinct from the rest of the UI. Rule: don't assume one
+> font family for the whole screen — cross-check `get_design_context`'s
+> per-element font claim against `get_variable_defs`, because utility/
+> code text can silently differ from body text.
+
+> **Caching** — confirmed 2026-08-27: `.cache/` existed but was empty
+> before this session (no prior fetch had been cached despite the
+> strategy being documented). Populated it this session with the
+> screenshot PNG, a metadata XML dump, and a variable-defs JSON dump,
+> each prefixed with the Figma node name + id so multiple fetches don't
+> collide. Rule confirmed workable: fetch, then immediately write raw
+> output to `.cache/<node-name>_<node-id>_<kind>.<ext>` before doing
+> anything else with it.
 
 ## `.cache/` strategy
 
@@ -68,17 +110,33 @@ authoritative, committed artifacts — this is just working material.)
 Running list of concrete next actions. Clear items as they're done;
 add new ones as they come up.
 
-1. **Run first Figma MCP session against the Mortgage Calculator
-   design** (already built in Figma via First Draft). Goals for that
-   session:
-   - Confirm Figma MCP tools are available (see Setup & detection above)
-   - Fetch metadata / screenshots / variable defs for the design
-   - Start filling in the Rules section above and
-     `carbon-figma-map.md`, based only on what's actually observed
-   - Do **not** start coding the feature in this pass — fetch and rule
-     discovery only
-2. Once rules exist, plan and build the Mortgage Calculator feature in
-   the Vite project using `@carbon/web-components`.
+1. ~~Run first Figma MCP session against the Mortgage Calculator
+   design~~ — **done 2026-08-27, but flagging a naming mismatch:** the
+   Figma URL provided (`node-id=11156-45588`) resolves to a node named
+   `travel-insurance-carbon` — an "Insurance Wizard" flow ("Customize
+   your coverage" / travel insurance, step 2 of 4), not a Mortgage
+   Calculator. No Mortgage Calculator node was located or fetched this
+   session. The Rules section above was filled in from this real fetch
+   and is sound regardless (tag ID, spacing, fonts, caching are feature-
+   agnostic), but item 2 below needs a decision: build out this
+   insurance wizard, or track down the actual Mortgage Calculator node
+   and re-fetch.
+2. ~~Build it in the Vite project using `@carbon/web-components`~~ —
+   **done 2026-08-27.** User chose to build the insurance wizard step
+   (not chase down a Mortgage Calculator node). `src/main.js` renders
+   the "Customize your coverage" screen with `cds-link`, `cds-button`,
+   `cds-radio-button-group`/`cds-radio-button`,
+   `cds-accordion`/`cds-accordion-item`,
+   `cds-date-picker`/`cds-date-picker-input`. Icons come from
+   `@carbon/icons` + `@carbon/icon-helpers` (added as explicit deps —
+   they were already transitive, but now imported directly), converted
+   to slotted SVG via `toString()`. Fonts via Google Fonts link in
+   `index.html` (IBM Plex Sans + IBM Plex Mono). Verified pixel-close
+   against the Figma screenshot by running the dev server and
+   screenshotting in a real browser — not just eyeballing code.
+   Remaining gap: only step 2 of the 4-step wizard is built; steps
+   1/3/4 ("Select Insurance", "Personal details", "Review & pay") were
+   never fetched from Figma and don't exist as nodes we've seen.
 
 ## Explicitly out of scope
 

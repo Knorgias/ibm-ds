@@ -4,12 +4,7 @@ Cache of slot mappings between Figma design output (via Figma MCP) and
 `@carbon/web-components` tags, plus per-component notes (events, attrs,
 gotchas) that don't reduce to a general rule-of-thumb in `CLAUDE.md`.
 
-Empty for now — entries get added here only after a component has
-actually been inspected via Figma MCP and its mapping confirmed. See
-`CLAUDE.md`'s "Next steps" section for the current fetch/discovery
-session this feeds into.
-
-## Format (once populated)
+## Format
 
 ```
 ### <Figma component name>
@@ -17,3 +12,53 @@ session this feeds into.
 - Slots: <mapping notes>
 - Notes: <events/attrs/gotchas specific to this component>
 ```
+
+## Confirmed entries
+
+Source: `travel-insurance-carbon` node (fileKey `Vnzztyo2jJgzLefU8ioqJ2`,
+node `11156:45588`), fetched 2026-08-27. Tag names verified against
+`@carbon/web-components@2.61.0` in `node_modules`, not guessed.
+
+### Link
+- Tag: `cds-link`
+- Notes: used here as a standalone back-link with a leading chevron
+  icon (no underline per Carbon docs — standalone links pair with an
+  icon instead). Docs: https://www.carbondesignsystem.com/components/link/usage/
+
+### Button
+- Tag: `cds-button`
+- Notes: two instances in this screen — an icon-only ghost/close button
+  (top-right "Close") and a primary button with trailing icon
+  ("Continue"). Docs: https://www.carbondesignsystem.com/components/button/usage
+
+### Radio button group / Radio button
+- Tag: `cds-radio-button-group` wrapping `cds-radio-button`
+- Slots: group carries the question label ("Where will you travel?");
+  each option is one `cds-radio-button` with a `value`/label
+  ("Europe"/"World", "90 days"/"180 days" in this design).
+- Notes: horizontal layout in both instances on this screen (direction
+  is a variant switcher per Carbon docs). Docs: https://www.carbondesignsystem.com/components/radio-button/usage/
+
+### Accordion item
+- Tag: `cds-accordion-item`, needs a `cds-accordion` parent wrapper
+  (wrapper wasn't its own Figma node in this fetch — infer it when two+
+  `Accordion item` instances sit together, as they do here).
+- Notes: collapsed by default in this design, chevron-down icon, single
+  line of header text ("More information about travel destination/
+  duration"). **Gotcha confirmed 2026-08-27 by rendering in-browser:**
+  the Figma design has the chevron *before* the title (left side), but
+  `cds-accordion-item`'s default `alignment` is `"END"` (chevron on the
+  right, `flex-direction: row-reverse`). Setting `alignment="start"` on
+  the *item* alone doesn't work — `cds-accordion` (the parent wrapper)
+  force-propagates its own `alignment` down to every child item on
+  connect, clobbering a per-item override. You must set
+  `alignment="start"` on the `<cds-accordion>` wrapper itself.
+
+### Date picker - Single calendar - Default
+- Tag: `cds-date-picker` (attribute for single-calendar mode) wrapping
+  `cds-date-picker-input`
+- Notes: the `" - Single calendar - Default"` part of the Figma name is
+  variant info, not part of the tag — see CLAUDE.md's tag-ID rule. Input
+  placeholder text ("DD-MM-YYYY") uses the Code utility font (IBM Plex
+  Mono), not body font — see CLAUDE.md's font-sourcing rule. Docs:
+  https://www.carbondesignsystem.com/components/date-picker/usage/
