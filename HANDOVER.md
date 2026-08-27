@@ -36,33 +36,30 @@ exercise, not tied to any other project in this workspace.
   design tokens). Disposable/regenerable, unlike the two files above.
 
 ## Current state
-A Mortgage Calculator feature is running on `localhost:3000`. It was
-built partly **before** the latest CLAUDE.md corrections landed
-(coordinate-math spacing, the tag naming rule, caching). It has not yet
-been audited against the current rules.
+No Mortgage Calculator node was ever located in Figma — the node ID
+originally provided (`11156:45588` in file `Vnzztyo2jJgzLefU8ioqJ2`)
+turned out to belong to a **travel insurance wizard**
+(`travel-insurance-carbon`), not a mortgage feature. Rather than chase
+down a nonexistent node, the project pivoted (2026-08-27) to building
+what's actually in Figma: step 2 of 4 of that wizard, "Customize your
+coverage" — `cds-link`, `cds-button`,
+`cds-radio-button-group`/`cds-radio-button`,
+`cds-accordion`/`cds-accordion-item`,
+`cds-date-picker`/`cds-date-picker-input`, icons via `@carbon/icons`.
+Verified pixel-close against the Figma screenshot in a real browser, not
+just by reading code. Run it with `npm install && npm run dev` (Vite's
+default port, 5173 — not the `localhost:3000` this doc used to
+reference).
 
-**Immediate next step — run this first:**
-```
-Audit the current implementation against the latest CLAUDE.md — some of
-it was built before recent corrections to the fetch protocol, tag
-identification, and caching rules.
+**Gap:** only step 2 is built. Steps 1/3/4 ("Select Insurance",
+"Personal details", "Review & pay") haven't been fetched from Figma and
+their node IDs aren't known yet.
 
-Specifically check:
-1. Spacing: was any spacing value sourced from get_variable_defs instead
-   of coordinate math on get_metadata? Flag and recompute if so.
-2. Component tags: does carbon-figma-map.md exist yet? If any component
-   was identified without checking the cds- + kebab-case rule (or its
-   Data table / Tag sub-type exceptions), verify it against the rule now.
-3. Caching: is there a .cache/ directory with cached screenshots,
-   metadata, and design tokens? If prior fetches weren't cached, no need
-   to re-fetch retroactively — just confirm caching is now in place for
-   future fetches.
-4. Fonts: was font family ever taken from get_design_context's output
-   rather than cross-checked against get_variable_defs?
-
-Report what you find per item before changing anything. For anything
-that's wrong per the current rules, fix it and note what changed.
-```
+**Immediate next step:** check `CLAUDE.md`'s "Next steps / prompts
+remaining" queue — that's the live source of truth, don't duplicate it
+here. As of this writing it has no open item; the natural next one is
+deciding whether to track down steps 1/3/4 of the wizard or call step 2
+a sufficient exercise.
 
 ## Open / unresolved
 - Figma plan/seat tier on the account in use — never explicitly
@@ -70,13 +67,18 @@ that's wrong per the current rules, fix it and note what changed.
   Dev/Full on Pro+: ~200/day).
 - Figma agent successfully redesigned one sketch using the Carbon
   library — validated once, not proven repeatable across feature types.
-- Fidelity checking is still manual/visual — CLAUDE.md's Prompts
-  remaining item 2 (Playwright + pixel-diff script) hasn't been run yet.
+- Fidelity checking is still manual/visual (screenshot + eyeball) —
+  CLAUDE.md's earlier-mentioned Playwright + pixel-diff script idea
+  hasn't been built.
 - IBM has official Code Connect set up for `@carbon/react` (CI-published
   from their design blog) — but that's React, not our Lit-based
   `@carbon/web-components`, and it's unconfirmed whether it's even
   visible outside IBM's internal Figma org. Not pursued further; noted
   here in case it becomes relevant later.
+- CLAUDE.md's tag-naming rule still carries two unverified exception
+  groups (Data table, Tag sub-types) — neither has been checked against
+  a live fetch yet. The rule has only been exercised on Link, Button,
+  Radio button (group), Accordion item, and Date picker so far.
 
 ## Explicitly out of scope
 Setting up real Code Connect (Org/Enterprise-gated). Any connection to
